@@ -4,11 +4,14 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Http\Message;
 
 $app = new \Slim\App;
-
-$app->get('/api/hotels', function(Request $request, Response $response){
-    $sql = "SELECT * FROM hotels c WHERE c.HotelId=5";
+//Busqueda de hotel por cualquier parametro
+$app->get('/api/hotels/{Attribute}/{column}', function(Request $request, Response $response){
+   $attribute_hotel = $request->getAttribute('Attribute');
+   $column_hotels= $request->getAttribute('column');
+    
+    $sql = "SELECT * FROM hotels  WHERE  $column_hotels='$attribute_hotel'";
+    
     try{
-        
         $db = new db();
         $db = $db->conecctionDB();
         $resultado = $db->query($sql);
@@ -19,12 +22,10 @@ $app->get('/api/hotels', function(Request $request, Response $response){
         }else{
             echo json_encode("No existen hoteles en la base de datos");
         }
-        
+
         $resultado = null;
         $db = null;
     }catch(PDOException $e){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
-
-
 });
