@@ -5,8 +5,8 @@ use Slim\Http\Message;
 
 $app = new \Slim\App;
 
-$app->get('/api/clientes', function(Request $request, Response $response){
-    $sql = "SELECT * FROM clientes";
+$app->get('/api/hotels', function(Request $request, Response $response){
+    $sql = "SELECT * FROM hotels c WHERE c.HotelId=5";
     try{
         
         $db = new db();
@@ -14,10 +14,10 @@ $app->get('/api/clientes', function(Request $request, Response $response){
         $resultado = $db->query($sql);
 
         if($resultado->rowCount() > 0){
-            $clientes= $resultado->fetchAll(PDO::FETCH_OBJ);
-            echo json_encode($clientes);
+            $hoteles= $resultado->fetchAll(PDO::FETCH_OBJ);
+            echo json_encode($hoteles);
         }else{
-            echo json_encode("No existen clientes en la base de datos");
+            echo json_encode("No existen hoteles en la base de datos");
         }
         
         $resultado = null;

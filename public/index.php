@@ -9,6 +9,6 @@ require '../src/config/db.php';
 $app = new \Slim\App;
 
 
-require '../src/rutas/clientes.php';
+require '../src/rutas/hoteles.php';
 
 $app->run();

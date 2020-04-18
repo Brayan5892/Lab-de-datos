@@ -4,7 +4,7 @@ class db{
     private $dbHost = 'localhost';
     private $dbUser = 'root';
     private $dbPass = 'cYxUOKO9cGzGyZRR';
-    private $dbName = 'apirest';
+    private $dbName = 'apih';
 
     public function conecctionDB(){
         $mysqlConnect= "mysql:host=$this->dbHost;dbname=$this->dbName";
