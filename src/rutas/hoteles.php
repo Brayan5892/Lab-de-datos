@@ -9,8 +9,19 @@ $app->get('/api/hotels/{Attribute}/{column}', function(Request $request, Respons
    $attribute_hotel = $request->getAttribute('Attribute');
    $column_hotels= $request->getAttribute('column');
     
-    $sql = "SELECT * FROM hotels  WHERE  $column_hotels='$attribute_hotel'";
-    
+   switch($attribute_hotel){
+       case 'Small':
+       $sql = "SELECT * FROM hotels  WHERE  $column_hotels<51";
+       break;
+       case 'Medium':
+      $sql = "SELECT * FROM hotels  WHERE  $column_hotels>50 and $column_hotels<101 ";
+       break;
+      case 'Large':
+        $sql = "SELECT * FROM hotels  WHERE  $column_hotels>100";
+      break;
+      default:
+      $sql = "SELECT * FROM hotels  WHERE  $column_hotels='$attribute_hotel'";
+   }
     try{
         $db = new db();
         $db = $db->conecctionDB();
