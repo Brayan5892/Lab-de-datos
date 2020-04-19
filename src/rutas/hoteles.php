@@ -8,7 +8,7 @@ use Slim\Http\Message;
 
 $app = new \Slim\App;
 //Busqueda de hotel por cualquier parametro
-$app->get('/api/hotels/{Attribute}/{column}', function(Request $request, Response $response){
+$app->get('/hotels/{Attribute}/{column}', function(Request $request, Response $response){
    $attribute_hotel = $request->getAttribute('Attribute');
    $column_hotels= $request->getAttribute('column');
    
@@ -46,7 +46,7 @@ $app->get('/api/hotels/{Attribute}/{column}', function(Request $request, Respons
 });
 
 
-$app->post('/api/usuario/nuevo', function(Request $request, Response $response){
+$app->post('/usuario/nuevo', function(Request $request, Response $response){
     $UserId = Contar();
     $Email = $request->getParam('Email');
     $Password = $request->getParam('Password');
