@@ -7,8 +7,9 @@ use Slim\Http\Message;
 
 
 $app = new \Slim\App;
+//Agregar una nueva reserva
 $app->post('/reservations/new', function(Request $request){
-    $ResId = Contar2();
+    $ResId = ContarR();
     $HotelId = $request->getParam('HotelId');
     $UserId = $request->getParam('UserId');
     $GuestsNum = $request->getParam('GuestsNum');
@@ -47,11 +48,13 @@ $app->post('/reservations/new', function(Request $request){
      }
     
 });
+
+//Eliminar una reserva identificada por ResID, HotelID y Fecha
 $app->delete('/reservations/delete/{ResID}/{HotelID}/{Fecha}', function(Request $request){
     $ReservID = $request->getAttribute('ResID');
     $HotelID = $request->getAttribute('HotelID');
     $Fecha = $request->getAttribute('Fecha');
-    if(ValDelete($ReservID,$HotelID,$Fecha)){
+    if(ValDeleteR($ReservID,$HotelID,$Fecha)){
         $sql = "DELETE FROM reservations  WHERE  ResID='$ReservID' AND HotelId='$HotelID' AND ('$Fecha' BETWEEN InitialDate AND FinalDate)";
         try{
             $db = new db();
@@ -67,7 +70,8 @@ $app->delete('/reservations/delete/{ResID}/{HotelID}/{Fecha}', function(Request 
         }
     }
 });
-function Contar2(){
+//Función para contar reservas
+function ContarR(){
     $sql = "SELECT * FROM reservations ";
     try{
         $db = new db();
@@ -83,6 +87,7 @@ function Contar2(){
 
     return ($Total+1);
 }
+//Función para validar si existe una reserva con un UserId especifico
 function ValUserId($UsId){
     $sql = "SELECT * FROM users WHERE UserId='$UsId'";
      try{
@@ -102,6 +107,7 @@ function ValUserId($UsId){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
 }
+//Función para validar si existe una reserva con un HotelId especifico
 function ValHotelId($HotId){
     $sql = "SELECT * FROM hotels WHERE HotelId='$HotId'";
      try{
@@ -121,7 +127,8 @@ function ValHotelId($HotId){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
 }
-function ValDelete($ReservID,$HotelID,$Fecha){
+//Funcion pra validar si se puede eliminar o no una reserva con los parametros ResId, HotelId y Fecha
+function ValDeleteR($ReservID,$HotelID,$Fecha){
     $sql = "SELECT * FROM reservations WHERE ResID='$ReservID' AND HotelId='$HotelID' AND ('$Fecha' BETWEEN InitialDate AND FinalDate)";
      try{
         $db = new db();
@@ -140,4 +147,5 @@ function ValDelete($ReservID,$HotelID,$Fecha){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
 }
+
 ?>

@@ -44,47 +44,95 @@ $app->get('/hotels/{Attribute}/{column}', function(Request $request, Response $r
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
 });
-
-
-$app->post('/usuario/nuevo', function(Request $request, Response $response){
-    $UserId = Contar();
-    $Email = $request->getParam('Email');
-    $Password = $request->getParam('Password');
+//Agregar un nuevo hotel
+$app->post('/hotels/{APIkey}/new', function(Request $request){
+    $APIkey = $request->getAttribute('APIkey');
+    $HotelId = ContarH();
     $Name = $request->getParam('Name');
-    $Lastname = $request->getParam('Lastname');
     $Address = $request->getParam('Address');
+    $State = $request->getParam('State');
     $Telephone = $request->getParam('Telephone');
+    $Fax = $request->getParam('Fax');
+    $Email = $request->getParam('Email');
+    $Website = $request->getParam('Website');
+    $Type = $request->getParam('Type');
+    $Size = $request->getParam('Size');
 
     
+    if(ValAPIkey($APIkey)){
+        $sql= "INSERT INTO hotels (HotelId, Name, Address, State, Telephone, Fax, Email, Website, Type, Size) VALUES 
+        (:HotelId, :Name, :Address, :State, :Telephone, :Fax, :Email, :Website, :Type, :Size)";
 
-    $sql= "INSERT INTO Users (UserId,Email, Password, Name, Lastname, Address, Telephone) VALUES 
-    (:UserId,:Email, :Password, :Name, :Lastname, :Address, :Telephone)";
+        try{
+            $db = new db();
+            $db = $db->conecctionDB();
+            $resultado = $db->prepare($sql);
 
-    try{
+            $resultado->bindParam(':HotelId', $HotelId);
+            $resultado->bindParam(':Name', $Name);
+            $resultado->bindParam(':Address', $Address);
+            $resultado->bindParam(':State', $State);
+            $resultado->bindParam(':Telephone', $Telephone);
+            $resultado->bindParam(':Fax', $Fax);
+            $resultado->bindParam(':Email', $Email);
+            $resultado->bindParam(':Website', $Website);
+            $resultado->bindParam(':Type', $Type);
+            $resultado->bindParam(':Size', $Size);
+
+            $resultado->execute();
+            echo json_encode("Nuevo hotel registrado, Su HotelId es: ".$HotelId);  
+
+            $resultado = null;
+            $db = null;
+          }catch(PDOException $e){
+            echo '{"error" : {"text":'.$e->getMessage().'}';
+          }
+     }
+    
+});
+//Eliminar un hotel identificado por HotelId
+$app->delete('/hotels/{APIkey}/delete/{HotelID}', function(Request $request){
+    $APIkey = $request->getAttribute('APIkey');
+    $HotelID = $request->getAttribute('HotelID');
+    if(ValDeleteH($HotelID) & ValAPIkey($APIkey)){
+        $sql = "DELETE FROM hotels  WHERE  HotelId='$HotelID'";
+        try{
+            $db = new db();
+            $db = $db->conecctionDB();
+            $resultado = $db->query($sql);
+
+            $Total=$resultado->rowCount();
+            echo json_encode("Hotel eliminada correctamente");  
+            $resultado = null;
+            $db = null;
+        }catch(PDOException $e){
+            echo '{"error" : {"text":'.$e->getMessage().'}';
+        }
+    }
+});
+//Función para validar ApiKey
+function ValAPIkey($APIkey){
+    $sql = "SELECT * FROM apikeys WHERE APIKey='$APIkey'";
+     try{
         $db = new db();
         $db = $db->conecctionDB();
-        $resultado = $db->prepare($sql);
-    
-        $resultado->bindParam(':UserId', $UserId);
-        $resultado->bindParam(':Email', $Email);
-        $resultado->bindParam(':Password', $Password);
-        $resultado->bindParam(':Name', $Name);
-        $resultado->bindParam(':Lastname', $Lastname);
-        $resultado->bindParam(':Address', $Address);
-        $resultado->bindParam(':Telephone', $Telephone);
-    
-        $resultado->execute();
-        echo json_encode("Nuevo cliente registrado, Su UserId es: ".$UserId);  
-    
-        $resultado = null;
-        $db = null;
-      }catch(PDOException $e){
-        echo '{"error" : {"text":'.$e->getMessage().'}';
-      }
-});
+        $resultado = $db->query($sql);
 
-function Contar(){
-    $sql = "SELECT * FROM users ";
+        if($resultado->rowCount() <= 0){
+            $resultado = null;
+            $db = null;
+            echo json_encode("API key no registrada");
+            return false;
+        }else{
+            return true;
+        }
+    }catch(PDOException $e){
+        echo '{"error" : {"text":'.$e->getMessage().'}';
+    }
+}
+//Función para contar hoteles
+function ContarH(){
+    $sql = "SELECT * FROM hotels ";
     try{
         $db = new db();
         $db = $db->conecctionDB();
@@ -99,4 +147,25 @@ function Contar(){
 
     return ($Total+1);
 }
+//Función pra validar si se puede eliminar o no un hotel identificado porhotelId
+function ValDeleteH($HotID){
+    $sql = "SELECT * FROM hotels WHERE HotelId='$HotID'";
+     try{
+        $db = new db();
+        $db = $db->conecctionDB();
+        $resultado = $db->query($sql);
 
+        if($resultado->rowCount() <= 0){
+            $resultado = null;
+            $db = null;
+            echo json_encode("No se encontro un hotel con los parametros suministrados");
+            return false;
+        }else{
+            return true;
+        }
+    }catch(PDOException $e){
+        echo '{"error" : {"text":'.$e->getMessage().'}';
+    }
+}
+
+?>

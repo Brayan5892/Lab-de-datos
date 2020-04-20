@@ -11,9 +11,10 @@ $app = new \Slim\App;
 
 
 require '../src/rutas/hoteles.php';
-
+require '../src/rutas/usuarios.php';
 require '../src/rutas/apikey.php';
 require '../src/rutas/reservas.php';
-$app->run();
-?>
 
+$app->run();
+
+?>
