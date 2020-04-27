@@ -3,11 +3,19 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Http\Message;
 
+<<<<<<< HEAD
 $app = new \Slim\App;
 
 require '../src/rutas/apikey.php';
 //Funcion agregar usuario
    $app->post('/users/new', function(Request $request){
+=======
+
+
+
+$app = new \Slim\App;
+   $app->post('/users/new', function(Request $request, Response $response){
+>>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
     $UserId = ContarU();
     $Email = $request->getParam('Email');
     $Password = $request->getParam('Password');
@@ -16,6 +24,11 @@ require '../src/rutas/apikey.php';
     $Address = $request->getParam('Address');
     $Telephone = $request->getParam('Telephone');
 
+<<<<<<< HEAD
+=======
+    
+
+>>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
     $sql= "INSERT INTO Users (UserId,Email, Password, Name, Lastname, Address, Telephone) VALUES 
     (:UserId,:Email, :Password, :Name, :Lastname, :Address, :Telephone)";
 
@@ -23,6 +36,10 @@ require '../src/rutas/apikey.php';
         $db = new db();
         $db = $db->conecctionDB();
         $resultado = $db->prepare($sql);
+<<<<<<< HEAD
+=======
+    
+>>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
         $resultado->bindParam(':UserId', $UserId);
         $resultado->bindParam(':Email', $Email);
         $resultado->bindParam(':Password', $Password);
@@ -40,6 +57,7 @@ require '../src/rutas/apikey.php';
         echo '{"error" : {"text":'.$e->getMessage().'}';
       }
 });
+<<<<<<< HEAD
 
 //Funcion modificar usuario
 $app->put('/api/usuario/modificar/{id}/{password}/{address}', function(Request $request){
@@ -90,6 +108,8 @@ $app->put('/api/usuario/modificar/{id}/{password}/{address}', function(Request $
 }
  }); 
 
+=======
+>>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
 //Función para contar usuarios
 function ContarU(){
     $sql = "SELECT * FROM users ";
@@ -108,6 +128,7 @@ function ContarU(){
     return ($Total+1);
 }
 
+<<<<<<< HEAD
 //Funcion para validar si existe un usuario con los parametros inducidos
 function validar($UserId, $Password, $Address){
     $sql = "SELECT * FROM users WHERE UserId='$UserId' and Password='$Password' and Address='$Address'";
@@ -131,4 +152,6 @@ function validar($UserId, $Password, $Address){
     }
 
 }
+=======
+>>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
 ?>

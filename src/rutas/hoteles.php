@@ -64,10 +64,13 @@ $app->post('/hotels/{APIkey}/new', function(Request $request){
     $Website = $request->getParam('Website');
     $Type = $request->getParam('Type');
     $Size = $request->getParam('Size');
+<<<<<<< HEAD
 
     if(ValAPIkey($APIkey)){
         $sql= "INSERT INTO hotels (HotelId, Name, Address, State, Telephone, Fax, Email, Website, Type, Size) VALUES 
         (:HotelId, :Name, :Address, :State, :Telephone, :Fax, :Email, :Website, :Type, :Size)";
+=======
+>>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
 
         try{
             $db = new db();
@@ -95,6 +98,7 @@ $app->post('/hotels/{APIkey}/new', function(Request $request){
           }
      }
     
+<<<<<<< HEAD
 });
 //Eliminar un hotel identificado por HotelId
 $app->delete('/hotels/{APIkey}/delete/{HotelID}', function(Request $request){
@@ -212,6 +216,59 @@ function dishotel($HotelId, $FechaI,$FechaF,$Nrooms){
 
 
 
+=======
+    if(ValAPIkey($APIkey)){
+        $sql= "INSERT INTO hotels (HotelId, Name, Address, State, Telephone, Fax, Email, Website, Type, Size) VALUES 
+        (:HotelId, :Name, :Address, :State, :Telephone, :Fax, :Email, :Website, :Type, :Size)";
+
+        try{
+            $db = new db();
+            $db = $db->conecctionDB();
+            $resultado = $db->prepare($sql);
+
+            $resultado->bindParam(':HotelId', $HotelId);
+            $resultado->bindParam(':Name', $Name);
+            $resultado->bindParam(':Address', $Address);
+            $resultado->bindParam(':State', $State);
+            $resultado->bindParam(':Telephone', $Telephone);
+            $resultado->bindParam(':Fax', $Fax);
+            $resultado->bindParam(':Email', $Email);
+            $resultado->bindParam(':Website', $Website);
+            $resultado->bindParam(':Type', $Type);
+            $resultado->bindParam(':Size', $Size);
+
+            $resultado->execute();
+            echo json_encode("Nuevo hotel registrado, Su HotelId es: ".$HotelId);  
+
+            $resultado = null;
+            $db = null;
+          }catch(PDOException $e){
+            echo '{"error" : {"text":'.$e->getMessage().'}';
+          }
+     }
+    
+});
+//Eliminar un hotel identificado por HotelId
+$app->delete('/hotels/{APIkey}/delete/{HotelID}', function(Request $request){
+    $APIkey = $request->getAttribute('APIkey');
+    $HotelID = $request->getAttribute('HotelID');
+    if(ValDeleteH($HotelID) & ValAPIkey($APIkey)){
+        $sql = "DELETE FROM hotels  WHERE  HotelId='$HotelID'";
+        try{
+            $db = new db();
+            $db = $db->conecctionDB();
+            $resultado = $db->query($sql);
+
+            $Total=$resultado->rowCount();
+            echo json_encode("Hotel eliminada correctamente");  
+            $resultado = null;
+            $db = null;
+        }catch(PDOException $e){
+            echo '{"error" : {"text":'.$e->getMessage().'}';
+        }
+    }
+});
+>>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
 //Función para validar ApiKey
 function ValAPIkey($APIkey){
     $sql = "SELECT * FROM apikeys WHERE APIKey='$APIkey'";

@@ -4,6 +4,11 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Http\Message;
 
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
 $app = new \Slim\App;
 //Agregar una nueva reserva
 $app->post('/reservations/new', function(Request $request){
@@ -15,6 +20,10 @@ $app->post('/reservations/new', function(Request $request){
     $RoomA = $request->getParam('RoomA');
     $IDate = $request->getParam('IDate');
     $FDate = $request->getParam('FDate');
+<<<<<<< HEAD
+=======
+
+>>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
     
     if(ValHotelId($HotelId) & ValUserId($UserId)){
         $sql= "INSERT INTO reservations (ResId, HotelId, UserId, GuestsNumber, RoomType, RoomAmount, InitialDate, FinalDate) VALUES 
