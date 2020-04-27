@@ -32,10 +32,31 @@ $app->get('/hotels/{Attribute}/{column}', function(Request $request, Response $r
         $resultado = $db->query($sql);
 
         if($resultado->rowCount() > 0){
-            $hoteles = $resultado->fetchAll(PDO::FETCH_OBJ);
-            echo json_encode($hoteles);
+            $hoteles = $resultado->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($hoteles as $row) {
+                echo "Hotel Id: ".$row['HotelId'];
+                echo "\n";
+                echo "Nombre: ".$row['Name']; 
+                echo "\n";
+                echo "Address: ".$row['Address'];
+                echo "\n";
+                echo "State: ".$row['State']; 
+                echo "\n";
+                echo "Telephone: ".$row['Telephone'];
+                echo "\n";
+                echo "Fax: ".$row['Fax']; 
+                echo "\n";
+                echo "Email: ".$row['Email'];
+                echo "\n";
+                echo "Website: ".$row['Website']; 
+                echo "\n";
+                echo "Type: ".$row['Type'];
+                echo "\n";
+                echo "Size: ".$row['Size']; 
+                echo "\n";
+             }
         }else{
-            echo json_encode("No existen hoteles en la base de datos");
+            echo json_encode("No se han encontrado hoteles en la base de datos");
         }
 
         $resultado = null;
