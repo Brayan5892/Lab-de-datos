@@ -3,7 +3,7 @@ class db{
 
     private $dbHost = 'localhost';
     private $dbUser = 'root';
-    private $dbPass = 'cnqv9HHIcIlvK0ql';
+    private $dbPass = 'udA38HSHMrqW76fS';
     private $dbName = 'apih';
 
     public function conecctionDB(){

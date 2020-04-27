@@ -64,13 +64,10 @@ $app->post('/hotels/{APIkey}/new', function(Request $request){
     $Website = $request->getParam('Website');
     $Type = $request->getParam('Type');
     $Size = $request->getParam('Size');
-<<<<<<< HEAD
 
     if(ValAPIkey($APIkey)){
         $sql= "INSERT INTO hotels (HotelId, Name, Address, State, Telephone, Fax, Email, Website, Type, Size) VALUES 
         (:HotelId, :Name, :Address, :State, :Telephone, :Fax, :Email, :Website, :Type, :Size)";
-=======
->>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
 
         try{
             $db = new db();
@@ -98,7 +95,6 @@ $app->post('/hotels/{APIkey}/new', function(Request $request){
           }
      }
     
-<<<<<<< HEAD
 });
 //Eliminar un hotel identificado por HotelId
 $app->delete('/hotels/{APIkey}/delete/{HotelID}', function(Request $request){
@@ -120,20 +116,44 @@ $app->delete('/hotels/{APIkey}/delete/{HotelID}', function(Request $request){
         }
     }
 });
+
 //Funcion busqueda hoteles por ubicacion
-$app->get('/hotels/ubicacion/{Latitude}/{Longitude}', function(Request $request){
+$app->get('/hotels/ubicacion/{Latitude}/{Longitude}/{Range}', function(Request $request){
     $latitude = $request->getAttribute('Latitude');
     $longitude= $request->getAttribute('Longitude');
-    $address2="31-ST JANUARY ROAD, FONTAINHAS, PANAJI, Panaji , GOA";
-    $address = urlencode($address2);
-    $url = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDfy86E7C2pwFeM6yxmYmvEkNzj9wqppQ4&address=" . $address;
-    $response = file_get_contents($url);
-    $json = json_decode($response,true);
- 
-    $lat = $json['results'][0]['geometry']['location']['lat'];
-    $lng = $json['results'][0]['geometry']['location']['lng'];
+    $rango=$request->getAttribute('Range');
+    $sql = "SELECT * FROM hotels ";
+ try{
+     $db = new db();
+     $db = $db->conecctionDB();
+     $resultado = $db->query($sql);
 
-    echo ("Latitud: ".$lat."\n Longitud: ".$lng);
+     if($resultado->rowCount() > 0){
+         $hoteles = $resultado->fetchAll(PDO::FETCH_ASSOC);
+      
+      foreach ($hoteles as $row) {
+         $coor=coordenadas($row['Address']);
+         if(($coor[0]>($latitude-$rango)) and ($coor[0]<($latitude+$rango)) and ($coor[1]>($longitude-$rango)) and ($coor[1]<($longitude+$rango))){
+            echo "Hotel Id: ".$row['HotelId'];
+            echo "\n";
+            echo "Nombre: ".$row['Name']; 
+            echo "\n\n";
+            echo "Latitud: ".$coor[0]."\n";
+            echo "Longitud: ".$coor[1]."\n";
+         }
+         
+      }
+      
+     }else{
+         echo json_encode("No existen hoteles en la base de datos");
+     }
+
+     $resultado = null;
+     $db = null;
+ }catch(PDOException $e){
+     echo '{"error" : {"text":'.$e->getMessage().'}';
+ }
+
  });
 
 //Disponibilidad
@@ -216,59 +236,6 @@ function dishotel($HotelId, $FechaI,$FechaF,$Nrooms){
 
 
 
-=======
-    if(ValAPIkey($APIkey)){
-        $sql= "INSERT INTO hotels (HotelId, Name, Address, State, Telephone, Fax, Email, Website, Type, Size) VALUES 
-        (:HotelId, :Name, :Address, :State, :Telephone, :Fax, :Email, :Website, :Type, :Size)";
-
-        try{
-            $db = new db();
-            $db = $db->conecctionDB();
-            $resultado = $db->prepare($sql);
-
-            $resultado->bindParam(':HotelId', $HotelId);
-            $resultado->bindParam(':Name', $Name);
-            $resultado->bindParam(':Address', $Address);
-            $resultado->bindParam(':State', $State);
-            $resultado->bindParam(':Telephone', $Telephone);
-            $resultado->bindParam(':Fax', $Fax);
-            $resultado->bindParam(':Email', $Email);
-            $resultado->bindParam(':Website', $Website);
-            $resultado->bindParam(':Type', $Type);
-            $resultado->bindParam(':Size', $Size);
-
-            $resultado->execute();
-            echo json_encode("Nuevo hotel registrado, Su HotelId es: ".$HotelId);  
-
-            $resultado = null;
-            $db = null;
-          }catch(PDOException $e){
-            echo '{"error" : {"text":'.$e->getMessage().'}';
-          }
-     }
-    
-});
-//Eliminar un hotel identificado por HotelId
-$app->delete('/hotels/{APIkey}/delete/{HotelID}', function(Request $request){
-    $APIkey = $request->getAttribute('APIkey');
-    $HotelID = $request->getAttribute('HotelID');
-    if(ValDeleteH($HotelID) & ValAPIkey($APIkey)){
-        $sql = "DELETE FROM hotels  WHERE  HotelId='$HotelID'";
-        try{
-            $db = new db();
-            $db = $db->conecctionDB();
-            $resultado = $db->query($sql);
-
-            $Total=$resultado->rowCount();
-            echo json_encode("Hotel eliminada correctamente");  
-            $resultado = null;
-            $db = null;
-        }catch(PDOException $e){
-            echo '{"error" : {"text":'.$e->getMessage().'}';
-        }
-    }
-});
->>>>>>> e43e4c561cb32308b2aaa7eddff4fc049418627a
 //Función para validar ApiKey
 function ValAPIkey($APIkey){
     $sql = "SELECT * FROM apikeys WHERE APIKey='$APIkey'";
@@ -327,4 +294,15 @@ function ValDeleteH($HotID){
     }
 }
 
-?>
+function coordenadas($address2){
+    $address2="31-ST JANUARY ROAD, FONTAINHAS, PANAJI, Panaji , GOA";
+    $address = urlencode($address2);
+    $url = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDfy86E7C2pwFeM6yxmYmvEkNzj9wqppQ4&address=" . $address;
+    $response = file_get_contents($url);
+    $json = json_decode($response,true);
+ 
+    $coor[0] = $json['results'][0]['geometry']['location']['lat'];
+    $coor[1] = $json['results'][0]['geometry']['location']['lng'];
+
+    return $coor;
+}
