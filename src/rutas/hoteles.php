@@ -4,7 +4,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Http\Message;
 
 
-
 $app = new \Slim\App;
 
 require '../src/rutas/usuarios.php';
@@ -127,7 +126,6 @@ $app->get('/hotels/ubicacion/{Latitude}/{Longitude}/{Range}', function(Request $
      $db = new db();
      $db = $db->conecctionDB();
      $resultado = $db->query($sql);
-
      if($resultado->rowCount() > 0){
          $hoteles = $resultado->fetchAll(PDO::FETCH_ASSOC);
       
@@ -137,24 +135,19 @@ $app->get('/hotels/ubicacion/{Latitude}/{Longitude}/{Range}', function(Request $
             echo "Hotel Id: ".$row['HotelId'];
             echo "\n";
             echo "Nombre: ".$row['Name']; 
-            echo "\n\n";
+            echo "\n";
             echo "Latitud: ".$coor[0]."\n";
-            echo "Longitud: ".$coor[1]."\n";
+            echo "Longitud: ".$coor[1]."\n\n";
          }
-         
       }
-      
      }else{
          echo json_encode("No existen hoteles en la base de datos");
      }
-
      $resultado = null;
      $db = null;
  }catch(PDOException $e){
      echo '{"error" : {"text":'.$e->getMessage().'}';
- }
-
- });
+ }});
 
 //Disponibilidad
 $app->get('/hotels/{FechaI}/{FechaF}/{State}', function(Request $request){
@@ -166,7 +159,6 @@ $app->get('/hotels/{FechaI}/{FechaF}/{State}', function(Request $request){
          $db = new db();
          $db = $db->conecctionDB();
          $resultado = $db->query($sql);
- 
          if($resultado->rowCount() > 0){
              $hoteles = $resultado->fetchAll(PDO::FETCH_ASSOC);
              $fecha1=new DateTime($FechaI);
@@ -177,7 +169,6 @@ $app->get('/hotels/{FechaI}/{FechaF}/{State}', function(Request $request){
          }else{
              echo json_encode("No existen hoteles en la base de datos");
          }
- 
          $resultado = null;
          $db = null;
      }catch(PDOException $e){
@@ -214,27 +205,21 @@ function dishotel($HotelId, $FechaI,$FechaF,$Nrooms){
                 }
             }
         }
-        echo("\nEl Hotel ".$HotelId." tiene:\n");
-        echo("Single: ".$small."\n");
-        echo("Double: ".$medium."\n");
-        echo("Suit: ".$suit."\n");
         }else{
             $small=ceil($Nrooms*0.3);
             $medium=ceil($Nrooms*0.6);
             $suit=ceil($Nrooms*0.1);
             $tot=($small+$medium+$suit);
             $small=($small-($tot-$Nrooms));
-            echo("El Hotel ".$HotelId." tiene:\n");
-            echo("Single: ".$small."\n");
-            echo("Double: ".$medium."\n");
-            echo("Suit: ".$suit."\n");
         }
+        echo("\nEl Hotel ".$HotelId." tiene:\n");
+        echo("Single: ".$small."\n");
+        echo("Double: ".$medium."\n");
+        echo("Suit: ".$suit."\n");
     }catch(PDOException $e){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
 }
-
-
 
 //Función para validar ApiKey
 function ValAPIkey($APIkey){
@@ -270,7 +255,6 @@ function ContarH(){
     }catch(PDOException $e){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
-
     return ($Total+1);
 }
 //Función pra validar si se puede eliminar o no un hotel identificado porhotelId
