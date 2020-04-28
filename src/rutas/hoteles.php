@@ -32,16 +32,30 @@ $app->get('/hotels/{Attribute}/{column}', function(Request $request, Response $r
 
         if($resultado->rowCount() > 0){
             $hoteles = $resultado->fetchAll(PDO::FETCH_ASSOC);
-         
-         foreach ($hoteles as $row) {
-            echo "Hotel Id: ".$row['HotelId'];
-            echo "\n";
-            echo "Nombre: ".$row['Name']; 
-            echo "\n\n";
-         }
-         
+            foreach ($hoteles as $row) {
+                echo "Hotel Id: ".$row['HotelId'];
+                echo "\n";
+                echo "Nombre: ".$row['Name']; 
+                echo "\n";
+                echo "Address: ".$row['Address'];
+                echo "\n";
+                echo "State: ".$row['State']; 
+                echo "\n";
+                echo "Telephone: ".$row['Telephone'];
+                echo "\n";
+                echo "Fax: ".$row['Fax']; 
+                echo "\n";
+                echo "Email: ".$row['Email'];
+                echo "\n";
+                echo "Website: ".$row['Website']; 
+                echo "\n";
+                echo "Type: ".$row['Type'];
+                echo "\n";
+                echo "Size: ".$row['Size']; 
+                echo "\n";
+             }
         }else{
-            echo json_encode("No existen hoteles en la base de datos");
+            echo json_encode("No se han encontrado hoteles en la base de datos");
         }
 
         $resultado = null;
@@ -95,6 +109,49 @@ $app->post('/hotels/{APIkey}/new', function(Request $request){
      }
     
 });
+//Modificar hotel identificado por HotelId
+$app->put('/hotels/{APIkey}/modify/{HotelId}', function(Request $request){
+    $HotID = $request->getAttribute('HotelId');
+    $APIkey = $request->getAttribute('APIkey');
+
+    $Telephone = $request->getParam('Telephone');
+    $Email = $request->getParam('Email');
+    $Website = $request->getParam('Website');
+    $Type = $request->getParam('Type');
+    $Size = $request->getParam('Size');
+
+ if(ValAPIkey($APIkey) & ValHotel($HotID)){
+   $sql = "UPDATE hotels SET
+           Telephone = :Telephone,
+           Email = :Email,
+           Website = :Website,
+           Type = :Type,
+           Size = :Size
+         WHERE HotelId='$HotID'";   
+   try{
+     $db = new db();
+     $db = $db->conecctionDB();
+     $resultado = $db->prepare($sql);
+    
+     $resultado->bindParam(':Telephone', $Telephone);
+     $resultado->bindParam(':Email', $Email);
+     $resultado->bindParam(':Website', $Website);
+     $resultado->bindParam(':Type', $Type);
+     $resultado->bindParam(':Size', $Size);
+ 
+     $resultado->execute();
+    
+     echo json_encode("Hotel modificado exitosamente.");  
+     
+   
+     $resultado = null;
+     $db = null;
+   }catch(PDOException $e){
+     echo ("error :C");
+     echo '{"error" : {"text":'.$e->getMessage().'}';
+   }
+}
+ });
 //Eliminar un hotel identificado por HotelId
 $app->delete('/hotels/{APIkey}/delete/{HotelID}', function(Request $request){
     $APIkey = $request->getAttribute('APIkey');
@@ -116,38 +173,21 @@ $app->delete('/hotels/{APIkey}/delete/{HotelID}', function(Request $request){
     }
 });
 
-//Funcion busqueda hoteles por ubicacion
+//Busqueda hoteles por ubicacion
 $app->get('/hotels/ubicacion/{Latitude}/{Longitude}/{Range}', function(Request $request){
     $latitude = $request->getAttribute('Latitude');
     $longitude= $request->getAttribute('Longitude');
     $rango=$request->getAttribute('Range');
-    $sql = "SELECT * FROM hotels ";
- try{
-     $db = new db();
-     $db = $db->conecctionDB();
-     $resultado = $db->query($sql);
-     if($resultado->rowCount() > 0){
-         $hoteles = $resultado->fetchAll(PDO::FETCH_ASSOC);
-      
-      foreach ($hoteles as $row) {
-         $coor=coordenadas($row['Address']);
-         if(($coor[0]>($latitude-$rango)) and ($coor[0]<($latitude+$rango)) and ($coor[1]>($longitude-$rango)) and ($coor[1]<($longitude+$rango))){
-            echo "Hotel Id: ".$row['HotelId'];
-            echo "\n";
-            echo "Nombre: ".$row['Name']; 
-            echo "\n";
-            echo "Latitud: ".$coor[0]."\n";
-            echo "Longitud: ".$coor[1]."\n\n";
-         }
-      }
-     }else{
-         echo json_encode("No existen hoteles en la base de datos");
-     }
-     $resultado = null;
-     $db = null;
- }catch(PDOException $e){
-     echo '{"error" : {"text":'.$e->getMessage().'}';
- }});
+    //$sql = "SELECT * FROM hotels ";
+    $resultado=coordenadas($latitude,$longitude,$rango);
+   
+    foreach ($resultado['results'] as $row) {
+       echo($row['name']);
+       echo("\n");
+    }
+   
+  //  echo  json_encode($resultado);
+});
 
 //Disponibilidad
 $app->get('/hotels/{FechaI}/{FechaF}/{State}', function(Request $request){
@@ -164,7 +204,11 @@ $app->get('/hotels/{FechaI}/{FechaF}/{State}', function(Request $request){
              $fecha1=new DateTime($FechaI);
              $fecha2=new DateTime($FechaF);
              foreach ($hoteles as $row) { 
-                dishotel($row['HotelId'],$fecha1,$fecha2,$row['Size']);
+                $Vect=dishotel($row['HotelId'],$fecha1,$fecha2,$row['Size']);
+                echo("\nEl Hotel ".$row['HotelId']." tiene:\n");
+                echo("Single: ".$Vect[0]."\n");
+                echo("Double: ".$Vect[1]."\n");
+                echo("Suit: ".$Vect[2]."\n");
              }
          }else{
              echo json_encode("No existen hoteles en la base de datos");
@@ -176,7 +220,7 @@ $app->get('/hotels/{FechaI}/{FechaF}/{State}', function(Request $request){
      }
  });
 
-//Funcion verifical disponibilidad de 1 hotel
+//Funcion verificar disponibilidad de 1 hotel
 function dishotel($HotelId, $FechaI,$FechaF,$Nrooms){
     $sql = "SELECT * FROM reservations WHERE HotelId='$HotelId'";
      try{
@@ -200,11 +244,12 @@ function dishotel($HotelId, $FechaI,$FechaF,$Nrooms){
                 if($row['RoomType']=='Double'){
                     $medium=$medium-$row['RoomAmount'];
                 }
-                if($row['RoomType']=='Suite'){
+                if($row['RoomType']=='Suit'){
                     $small=$suit-$row['RoomAmount'];
                 }
             }
         }
+
         }else{
             $small=ceil($Nrooms*0.3);
             $medium=ceil($Nrooms*0.6);
@@ -212,10 +257,10 @@ function dishotel($HotelId, $FechaI,$FechaF,$Nrooms){
             $tot=($small+$medium+$suit);
             $small=($small-($tot-$Nrooms));
         }
-        echo("\nEl Hotel ".$HotelId." tiene:\n");
-        echo("Single: ".$small."\n");
-        echo("Double: ".$medium."\n");
-        echo("Suit: ".$suit."\n");
+         $Vec[0]=$small;
+         $Vec[1]=$medium;
+         $Vec[2]=$suit;
+         return $Vec;
     }catch(PDOException $e){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
@@ -257,7 +302,7 @@ function ContarH(){
     }
     return ($Total+1);
 }
-//Función pra validar si se puede eliminar o no un hotel identificado porhotelId
+//Función pra validar si se puede eliminar o no un hotel identificado por hotelId
 function ValDeleteH($HotID){
     $sql = "SELECT * FROM hotels WHERE HotelId='$HotID'";
      try{
@@ -278,15 +323,29 @@ function ValDeleteH($HotID){
     }
 }
 
-function coordenadas($address2){
-    $address2="31-ST JANUARY ROAD, FONTAINHAS, PANAJI, Panaji , GOA";
-    $address = urlencode($address2);
-    $url = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDfy86E7C2pwFeM6yxmYmvEkNzj9wqppQ4&address=" . $address;
+function coordenadas($latitud,$longitud,$rango){
+    $url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=".$latitud.",".$longitud."&radius=".$rango."&type=Lodging&key=AIzaSyDfy86E7C2pwFeM6yxmYmvEkNzj9wqppQ4";
     $response = file_get_contents($url);
     $json = json_decode($response,true);
- 
-    $coor[0] = $json['results'][0]['geometry']['location']['lat'];
-    $coor[1] = $json['results'][0]['geometry']['location']['lng'];
+    return $json;
+}
+//Función para validar si existe una reserva con un HotelId especifico
+function ValHotel($HotelId){
+    $sql = "SELECT * FROM hotels WHERE HotelId='$HotelId'";
+     try{
+        $db = new db();
+        $db = $db->conecctionDB();
+        $resultado = $db->query($sql);
 
-    return $coor;
+        if($resultado->rowCount() <= 0){
+            $resultado = null;
+            $db = null;
+            echo json_encode("No se encontro un hotel con el HotelId ".$HotelId);
+            return false;
+        }else{
+            return true;
+        }
+    }catch(PDOException $e){
+        echo '{"error" : {"text":'.$e->getMessage().'}';
+    }
 }

@@ -5,6 +5,7 @@ require '../vendor/autoload.php';
 require '../src/config/db.php';
 $app = new \Slim\App;
 
+
 require '../src/rutas/hoteles.php';
 
 $app->run();

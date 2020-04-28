@@ -6,7 +6,7 @@ use Slim\Http\Message;
 $app = new \Slim\App;
 
 require '../src/rutas/apikey.php';
-//Funcion agregar usuario
+//Agregar un nuevo usuario
    $app->post('/users/new', function(Request $request){
     $UserId = ContarU();
     $Email = $request->getParam('Email');
@@ -41,8 +41,8 @@ require '../src/rutas/apikey.php';
       }
 });
 
-//Funcion modificar usuario
-$app->put('/api/usuario/modificar/{id}/{password}/{address}', function(Request $request){
+//Modificar usuario identificado por UserId, Password y Address 
+$app->put('/users/modify/{id}/{password}/{address}', function(Request $request){
     $id_clienteV = $request->getAttribute('id');
     $passwordV = $request->getAttribute('password');
     $addressV = $request->getAttribute('address');
@@ -108,7 +108,7 @@ function ContarU(){
     return ($Total+1);
 }
 
-//Funcion para validar si existe un usuario con los parametros inducidos
+//Funcion para validar si existe un usuario con los parametros especificados
 function validar($UserId, $Password, $Address){
     $sql = "SELECT * FROM users WHERE UserId='$UserId' and Password='$Password' and Address='$Address'";
     try{
