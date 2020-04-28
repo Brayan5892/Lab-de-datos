@@ -7,7 +7,7 @@ class db{
     private $dbName = 'apih';
 
     public function conecctionDB(){
-        $mysqlConnect= "mysql:host=$this->dbHost;dbname=$this->dbName";
+        $mysqlConnect= "mysql:host=$this->dbHost;port=3306;dbname=$this->dbName";
         $dbConnection = new PDO($mysqlConnect, $this->dbUser, $this->dbPass);
         $dbConnection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         return $dbConnection;

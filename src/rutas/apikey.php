@@ -3,6 +3,9 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Http\Message;
 $app = new \Slim\App;
+
+require '../src/rutas/reservas.php';
+
 $app->post('/APIkey/new', function(Request $request){
     $APIkey = rand(1000000,9999999);
     $ContactN = $request->getParam('ContactN');
@@ -34,4 +37,3 @@ $app->post('/APIkey/new', function(Request $request){
     
 });
 
-?>

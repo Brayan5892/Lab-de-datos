@@ -4,9 +4,8 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Http\Message;
 
 
-
-
 $app = new \Slim\App;
+include_once '../src/rutas/hoteles.php';
 //Agregar una nueva reserva
 $app->post('/reservations/new', function(Request $request){
     $ResId = ContarR();
@@ -17,9 +16,24 @@ $app->post('/reservations/new', function(Request $request){
     $RoomA = $request->getParam('RoomA');
     $IDate = $request->getParam('IDate');
     $FDate = $request->getParam('FDate');
-
+    
     
     if(ValHotelId($HotelId) & ValUserId($UserId)){
+        $HotelSize=GetSize($HotelId);
+        $Vec=dishotel($HotelId,$IDate,$FDate,$HotelSize);
+        switch($RoomT){
+            case 'Single':
+                $num=$Vec[0];
+            break;
+            case 'Double':
+                $num=$Vec[1];
+            break;
+            case 'Suit':
+                $num=$Vec[2];
+            break;
+        }
+        if($num>=$RoomA){
+          $Price=GetPrice($HotelSize, $RoomT, $RoomA);  
         $sql= "INSERT INTO reservations (ResId, HotelId, UserId, GuestsNumber, RoomType, RoomAmount, InitialDate, FinalDate) VALUES 
     (:ResId, :HotelId, :UserId, :GuestsNum, :RoomT, :RoomA, :IDate, :FDate)";
 
@@ -38,15 +52,17 @@ $app->post('/reservations/new', function(Request $request){
             $resultado->bindParam(':FDate', $FDate);
 
             $resultado->execute();
-            echo json_encode("Nueva reserva registrada, Su ResId es: ".$ResId);  
+            echo json_encode("Nueva reserva registrada, Su ResId es: ".$ResId.", tendra un costo de $".$Price." por noche");  
 
             $resultado = null;
             $db = null;
           }catch(PDOException $e){
             echo '{"error" : {"text":'.$e->getMessage().'}';
           }
-     }
-    
+        }else{
+            echo json_encode("El hotel ".$HotelId." no tiene disponible la cantidad de habitaciones solicitadas en la fecha solicitada.");
+        }
+    }
 });
 
 //Eliminar una reserva identificada por ResID, HotelID y Fecha
@@ -70,6 +86,67 @@ $app->delete('/reservations/delete/{ResID}/{HotelID}/{Fecha}', function(Request 
         }
     }
 });
+//Función para obtener el tamaño de un hotel
+function GetSize($HotelID){
+    $sql = "SELECT Size FROM hotels WHERE HotelId='$HotelID'";
+     try{
+        $db = new db();
+        $db = $db->conecctionDB();
+        $resultado = $db->query($sql);
+        if($resultado->rowCount() > 0){
+            $hoteles = $resultado->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($hoteles as $row) {
+                return $row['Size'];
+            }
+        }
+    }catch(PDOException $e){
+        echo '{"error" : {"text":'.$e->getMessage().'}';
+    }
+}
+//Función para calcular precio de la reserva
+function GetPrice($HSize, $RoomT, $RoomA){
+    $price =0;
+    if($HSize<=50){
+        switch($RoomT){
+           case 'Single':
+                $price=50;
+                break;
+            case 'Double':
+                $price=70;
+                break;
+            case 'Suit':
+                $price=130;
+                break;
+            }
+    }else{
+        if($HSize<=100 & $HSize>=51){
+            switch($RoomT){
+                case 'Single':
+                    $price=70;
+                    break;
+                case 'Double':
+                    $price=100;
+                    break;
+                case 'Suit':
+                    $price=200;
+                    break;
+                }
+        }else{
+            switch($RoomT){
+                case 'Single':
+                    $price=90;
+                    break;
+                case 'Double':
+                    $price=120;
+                    break;
+                case 'Suit':
+                    $price=500;
+                    break;
+            }
+        } 
+    }
+    return $price*$RoomA;
+}
 //Función para contar reservas
 function ContarR(){
     $sql = "SELECT * FROM reservations ";
@@ -127,7 +204,7 @@ function ValHotelId($HotId){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
 }
-//Funcion pra validar si se puede eliminar o no una reserva con los parametros ResId, HotelId y Fecha
+//Funcion para validar si se puede eliminar o no una reserva con los parametros ResId, HotelId y Fecha
 function ValDeleteR($ReservID,$HotelID,$Fecha){
     $sql = "SELECT * FROM reservations WHERE ResID='$ReservID' AND HotelId='$HotelID' AND ('$Fecha' BETWEEN InitialDate AND FinalDate)";
      try{
@@ -148,4 +225,3 @@ function ValDeleteR($ReservID,$HotelID,$Fecha){
     }
 }
 
-?>
