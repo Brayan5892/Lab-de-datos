@@ -5,7 +5,6 @@ use Slim\Http\Message;
 
 
 $app = new \Slim\App;
-include_once '../src/rutas/hoteles.php';
 //Agregar una nueva reserva
 $app->post('/reservations/new', function(Request $request){
     $ResId = ContarR();
@@ -20,7 +19,7 @@ $app->post('/reservations/new', function(Request $request){
     
     if(ValHotelId($HotelId) & ValUserId($UserId)){
         $HotelSize=GetSize($HotelId);
-        $Vec=dishotel($HotelId,$IDate,$FDate,$HotelSize);
+        $Vec=dishotelR($HotelId,$IDate,$FDate,$HotelSize);
         switch($RoomT){
             case 'Single':
                 $num=$Vec[0];
@@ -146,6 +145,49 @@ function GetPrice($HSize, $RoomT, $RoomA){
         } 
     }
     return $price*$RoomA;
+}
+function dishotelR($HotelId, $FechaI, $FechaF,$Nrooms){
+    $sql = "SELECT * FROM reservations WHERE HotelId='$HotelId'";
+     try{
+        $db = new db();
+        $db = $db->conecctionDB();
+        $resultado = $db->query($sql); 
+        if($resultado->rowCount() > 0){
+            $Reservas = $resultado->fetchAll(PDO::FETCH_ASSOC);
+         $small=ceil($Nrooms*0.3);
+         $medium=ceil($Nrooms*0.6);
+         $suit=ceil($Nrooms*0.1);
+         $tot=($small+$medium+$suit);
+         $small=($small-($tot-$Nrooms));
+         foreach ($Reservas as $row) {
+            $RFechaI=($row['InitialDate']);
+            $RFechaF=($row['FinalDate']);
+            if(($FechaI>=$RFechaI and $FechaI<=$RFechaF) or ($FechaF<=$RFechaF and $FechaF>=$RFechaI)){
+                if($row['RoomType']=='Single'){
+                    $small=$small-$row['RoomAmount'];
+                }
+                if($row['RoomType']=='Double'){
+                    $medium=$medium-$row['RoomAmount'];
+                }
+                if($row['RoomType']=='Suit'){
+                    $small=$suit-$row['RoomAmount'];
+                }
+            }
+        }
+        }else{
+            $small=ceil($Nrooms*0.3);
+            $medium=ceil($Nrooms*0.6);
+            $suit=ceil($Nrooms*0.1);
+            $tot=($small+$medium+$suit);
+            $small=($small-($tot-$Nrooms));
+        }
+         $Vec[0]=$small;
+         $Vec[1]=$medium;
+         $Vec[2]=$suit;
+         return $Vec;
+    }catch(PDOException $e){
+        echo '{"error" : {"text":'.$e->getMessage().'}';
+    }
 }
 //Función para contar reservas
 function ContarR(){

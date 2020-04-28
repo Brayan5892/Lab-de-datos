@@ -166,7 +166,7 @@ $app->delete('/hotels/{APIkey}/delete/{HotelID}', function(Request $request){
             $resultado = $db->query($sql);
 
             $Total=$resultado->rowCount();
-            echo json_encode("Hotel eliminada correctamente");  
+            echo json_encode("Hotel eliminado correctamente");  
             $resultado = null;
             $db = null;
         }catch(PDOException $e){
