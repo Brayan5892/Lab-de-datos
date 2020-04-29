@@ -3,6 +3,7 @@ class db{
 
     private $dbHost = 'localhost';
     private $dbUser = 'root';
+    //private $dbPass = 'udA38HSHMrqW76fS';
     private $dbPass = 'cnqv9HHIcIlvK0ql';
     private $dbName = 'apih';
 

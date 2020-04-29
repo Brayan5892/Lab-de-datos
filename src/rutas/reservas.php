@@ -16,21 +16,38 @@ $app->post('/reservations/new', function(Request $request){
     $IDate = $request->getParam('IDate');
     $FDate = $request->getParam('FDate');
     
-    
     if(ValHotelId($HotelId) & ValUserId($UserId)){
         $HotelSize=GetSize($HotelId);
+       
         $Vec=dishotelR($HotelId,$IDate,$FDate,$HotelSize);
+
+        $small=ceil($HotelSize*0.3);
+         $medium=ceil($HotelSize*0.6);
+         $suit=ceil($HotelSize*0.1);
+         $tot=($small+$medium+$suit);
+         $small=($small-($tot-$HotelSize));
+
         switch($RoomT){
             case 'Single':
                 $num=$Vec[0];
+                for ($i=0; $i < $RoomA; $i++) { 
+                   $ids[$i]=(($small+1)-$num)+$i;
+                }
             break;
             case 'Double':
                 $num=$Vec[1];
+                for ($i=0; $i < $RoomA; $i++) { 
+                    $ids[$i]=(($medium+1)-$num)+$i+$small;
+                 }
             break;
             case 'Suit':
                 $num=$Vec[2];
+                for ($i=0; $i < $RoomA; $i++) { 
+                    $ids[$i]=(($suit+1)-$num)+$i+$small+$medium;
+                 }
             break;
         }
+        echo $num;
         if($num>=$RoomA){
           $Price=GetPrice($HotelSize, $RoomT, $RoomA);  
         $sql= "INSERT INTO reservations (ResId, HotelId, UserId, GuestsNumber, RoomType, RoomAmount, InitialDate, FinalDate) VALUES 
@@ -40,7 +57,6 @@ $app->post('/reservations/new', function(Request $request){
             $db = new db();
             $db = $db->conecctionDB();
             $resultado = $db->prepare($sql);
-
             $resultado->bindParam(':ResId', $ResId);
             $resultado->bindParam(':HotelId', $HotelId);
             $resultado->bindParam(':UserId', $UserId);
@@ -52,7 +68,11 @@ $app->post('/reservations/new', function(Request $request){
 
             $resultado->execute();
             echo json_encode("Nueva reserva registrada, Su ResId es: ".$ResId.", tendra un costo de $".$Price." por noche");  
-
+            echo("\n");
+            echo "id de habitaciones reservadas: ";
+            foreach ($ids as $row) {
+                echo($row.",");
+            }
             $resultado = null;
             $db = null;
           }catch(PDOException $e){
@@ -85,6 +105,7 @@ $app->delete('/reservations/delete/{ResID}/{HotelID}/{Fecha}', function(Request 
         }
     }
 });
+
 //Función para obtener el tamaño de un hotel
 function GetSize($HotelID){
     $sql = "SELECT Size FROM hotels WHERE HotelId='$HotelID'";
@@ -92,16 +113,16 @@ function GetSize($HotelID){
         $db = new db();
         $db = $db->conecctionDB();
         $resultado = $db->query($sql);
-        if($resultado->rowCount() > 0){
-            $hoteles = $resultado->fetchAll(PDO::FETCH_ASSOC);
-            foreach ($hoteles as $row) {
-                return $row['Size'];
-            }
-        }
+        
+       $hoteles = $resultado->fetchAll(PDO::FETCH_ASSOC);
+            
+       return $hoteles[0]['Size'];
+            
     }catch(PDOException $e){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
 }
+
 //Función para calcular precio de la reserva
 function GetPrice($HSize, $RoomT, $RoomA){
     $price =0;
@@ -146,7 +167,9 @@ function GetPrice($HSize, $RoomT, $RoomA){
     }
     return $price*$RoomA;
 }
-function dishotelR($HotelId, $FechaI, $FechaF,$Nrooms){
+
+
+function dishotelR($HotelId, $FechaI ,$FechaF,$Nrooms){
     $sql = "SELECT * FROM reservations WHERE HotelId='$HotelId'";
      try{
         $db = new db();
@@ -170,7 +193,7 @@ function dishotelR($HotelId, $FechaI, $FechaF,$Nrooms){
                     $medium=$medium-$row['RoomAmount'];
                 }
                 if($row['RoomType']=='Suit'){
-                    $small=$suit-$row['RoomAmount'];
+                    $suit=$suit-$row['RoomAmount'];
                 }
             }
         }
@@ -191,20 +214,21 @@ function dishotelR($HotelId, $FechaI, $FechaF,$Nrooms){
 }
 //Función para contar reservas
 function ContarR(){
-    $sql = "SELECT * FROM reservations ";
+    $sql = "SELECT * FROM reservations ORDER BY ResId desc limit 1";
     try{
         $db = new db();
         $db = $db->conecctionDB();
         $resultado = $db->query($sql);
 
-        $Total=$resultado->rowCount();
+        $Total=$resultado->fetchAll(PDO::FETCH_ASSOC);
+        
+        $Total2=$Total[0]['ResId'];
         $resultado = null;
         $db = null;
     }catch(PDOException $e){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
-
-    return ($Total+1);
+    return ($Total2+1);
 }
 //Función para validar si existe una reserva con un UserId especifico
 function ValUserId($UsId){
@@ -266,4 +290,3 @@ function ValDeleteR($ReservID,$HotelID,$Fecha){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
 }
-
