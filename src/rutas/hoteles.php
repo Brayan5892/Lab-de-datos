@@ -33,6 +33,7 @@ $app->get('/hotels/{Attribute}/{column}', function(Request $request, Response $r
         if($resultado->rowCount() > 0){
             $hoteles = $resultado->fetchAll(PDO::FETCH_ASSOC);
             foreach ($hoteles as $row) {
+                echo "\n";
                 echo "Hotel Id: ".$row['HotelId'];
                 echo "\n";
                 echo "Nombre: ".$row['Name']; 
@@ -108,7 +109,7 @@ $app->post('/hotels/{APIkey}/new', function(Request $request){
             $resultado->bindParam(':Website', $Website);
             $resultado->bindParam(':Type', $Type);
             $resultado->bindParam(':Size', $Size);
-
+            
             $resultado->execute();
             echo json_encode("Nuevo hotel registrado, Su HotelId es: ".$HotelId);  
 
@@ -205,7 +206,7 @@ $app->get('/hotels/location/{Latitude}/{Longitude}/{Range}', function(Request $r
                 echo("\n");
             }
         }
-
+});
 //Disponibilidad
 $app->get('/hotels/{FechaI}/{FechaF}/{State}', function(Request $request){
     $FechaI = $request->getAttribute('FechaI');
@@ -254,7 +255,7 @@ function dishotel($HotelId, $FechaI,$FechaF,$Nrooms){
          foreach ($Reservas as $row) {
             $RFechaI=new DateTime($row['InitialDate']);
             $RFechaF=new DateTime($row['FinalDate']);
-            if(($FechaI>$RFechaI and $FechaI<$RFechaF) or ($FechaF<$RFechaF and $FechaF>$RFechaI)){
+            if(($FechaI>=$RFechaI and $FechaI<=$RFechaF) or ($FechaF<=$RFechaF and $FechaF>=$RFechaI)){
                 if($row['RoomType']=='Single'){
                     $small=$small-$row['RoomAmount'];
                 }
@@ -262,7 +263,7 @@ function dishotel($HotelId, $FechaI,$FechaF,$Nrooms){
                     $medium=$medium-$row['RoomAmount'];
                 }
                 if($row['RoomType']=='Suit'){
-                    $small=$suit-$row['RoomAmount'];
+                    $suit=$suit-$row['RoomAmount'];
                 }
             }
         }
@@ -304,7 +305,7 @@ function ValAPIkey($APIkey){
     }
 }
 //Función para contar hoteles
-function ContarR(){
+function ContarH(){
     $sql = "SELECT * FROM hotels ORDER BY HotelId desc limit 1";
     try{
         $db = new db();

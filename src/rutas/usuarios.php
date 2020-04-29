@@ -42,16 +42,16 @@ require '../src/rutas/apikey.php';
 });
 
 //Modificar usuario identificado por UserId, Password y Address 
-$app->put('/users/modify/{id}/{password}/{address}', function(Request $request){
+$app->put('/users/modify/{id}/{address}', function(Request $request){
     $id_clienteV = $request->getAttribute('id');
-    $passwordV = $request->getAttribute('password');
     $addressV = $request->getAttribute('address');
 
     $Email = $request->getParam('Email');
-    $Password = $request->getParam('Password');
+    $passwordV = $request->getParam('Actual password');
+    $Password = $request->getParam('New password');
     $Name = $request->getParam('Name');
     $Lastname = $request->getParam('Lastname');
-    $Address = $request->getParam('Address');
+    $Address = $request->getParam('New address');
     $Telephone = $request->getParam('Telephone');
 
  if(validar($id_clienteV,$passwordV,$addressV )){
@@ -78,7 +78,7 @@ $app->put('/users/modify/{id}/{password}/{address}', function(Request $request){
  
      $resultado->execute();
     
-     echo json_encode("Usuario modificado.");  
+     echo json_encode("1. Usuario modificado.");  
      
    
      $resultado = null;
@@ -92,20 +92,21 @@ $app->put('/users/modify/{id}/{password}/{address}', function(Request $request){
 
 //Función para contar usuarios
 function ContarU(){
-    $sql = "SELECT * FROM users ";
+    $sql = "SELECT * FROM users ORDER BY UserId desc limit 1";
     try{
         $db = new db();
         $db = $db->conecctionDB();
         $resultado = $db->query($sql);
 
-        $Total=$resultado->rowCount();
+        $Total=$resultado->fetchAll(PDO::FETCH_ASSOC);
+        
+        $Total2=$Total[0]['UserId'];
         $resultado = null;
         $db = null;
     }catch(PDOException $e){
         echo '{"error" : {"text":'.$e->getMessage().'}';
     }
-
-    return ($Total+1);
+    return ($Total2+1);
 }
 
 //Funcion para validar si existe un usuario con los parametros especificados
@@ -121,7 +122,7 @@ function validar($UserId, $Password, $Address){
         if($Total>0){
             return true;
         }else{
-            echo json_encode("No se encontro el usuario");
+            echo "0. No se encontro un usuario con los parametros especificados";
             return false;
         }
         $resultado = null;

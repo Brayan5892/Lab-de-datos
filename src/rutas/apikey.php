@@ -8,7 +8,7 @@ require '../src/rutas/reservas.php';
 
 $app->post('/APIkey/new', function(Request $request){
     $APIkey = rand(1000000,9999999);
-    $ContactN = $request->getParam('ContactN');
+    $ContactN = $request->getParam('Contact name');
     $Company = $request->getParam('Company');
     $Email = $request->getParam('Email');
 

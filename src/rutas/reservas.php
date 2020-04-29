@@ -47,7 +47,6 @@ $app->post('/reservations/new', function(Request $request){
                  }
             break;
         }
-        echo $num;
         if($num>=$RoomA){
           $Price=GetPrice($HotelSize, $RoomT, $RoomA);  
         $sql= "INSERT INTO reservations (ResId, HotelId, UserId, GuestsNumber, RoomType, RoomAmount, InitialDate, FinalDate) VALUES 
